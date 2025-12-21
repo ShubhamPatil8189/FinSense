@@ -23,4 +23,4 @@ const generateFinancialInsight = async (prompt) => {
   }
 };
 
-module.exports = { generateFinancialInsight };
+module.exports = { generateFinancialInsight, genAI };

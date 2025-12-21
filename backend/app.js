@@ -10,6 +10,11 @@ const incomeRoutes = require('./src/routes/income.route');
 const goalRoutes = require('./src/routes/goal.route');
 const groupRoutes = require('./src/routes/group.route');
 const emotionRoutes = require('./src/routes/emotion.route');
+const simulationRoutes = require('./src/routes/simulation.route');
+const negotiationRoutes = require('./src/routes/negotiation.route');
+const nudgeRoutes = require('./src/routes/nudge.route');
+const spendDnaRoutes = require('./src/routes/spendDNA.route');
+
 
 
 const app = express();
@@ -46,6 +51,11 @@ app.use('/api/income', incomeRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/emotion', emotionRoutes);
+app.use('/api/simulation', simulationRoutes);
+app.use('/api/negotiation', negotiationRoutes);
+app.use('/api/nudges', nudgeRoutes);
+app.use('/api/spend-dna', spendDnaRoutes);
+
 
 /* ---------- Health Check ---------- */
 app.get('/', (req, res) => {

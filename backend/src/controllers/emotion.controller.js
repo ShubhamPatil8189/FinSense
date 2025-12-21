@@ -1,23 +1,41 @@
 const Expense = require('../modules/expense.model');
-const { generateFinancialInsight } = require('../config/gemini');
+const { model } = require('../config/gemini');
 
 exports.analyzeEmotion = async (req, res) => {
   try {
     const { mood } = req.body;
-    const expenses = await Expense.find({ userId: req.user._id }).sort({ date: -1 }).limit(15);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    if (expenses.length === 0) return res.status(400).json({ error: 'No expense data found.' });
+    const expenses = await Expense.find({
+      userId: req.user._id,
+      date: { $gte: thirtyDaysAgo }
+    }).sort({ date: -1 });
 
-    const expenseSummary = expenses.map(e => `${e.category}: ₹${e.amount} (${e.mood})`).join('\n');
-    const prompt = `You are a financial therapist. Analyze these recent expenses:\n${expenseSummary}\n\nThe user is currently feeling: ${mood}.\n\nProvide a psychological analysis of their spending and 3 tips to stay disciplined.`;
+    if (expenses.length === 0) {
+      return res.status(400).json({ error: 'Not enough data.' });
+    }
 
-    const aiInsight = await generateFinancialInsight(prompt);
+    const expenseData = expenses
+      .map(e => `${e.category}: ₹${e.amount} (Mood: ${e.mood})`)
+      .join('\n');
+
+    const prompt = `You are a financial psychology expert. Analyze this spending:
+    ${expenseData}
+    User mood: ${mood}.
+    Provide: 1) Pattern analysis 2) Emotional triggers 3) Actionable advice.`;
+
+    // Standard generateContent call
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
     res.json({
-      message: 'Emotional analysis complete',
-      aiInsight
+      message: 'Analysis complete',
+      data: { aiInsight: text }
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Gemini Error:", error);
+    res.status(500).json({ error: "AI Service temporarily unavailable. Please check your API Key and Model permissions." });
   }
 };
