@@ -14,8 +14,9 @@ const simulationRoutes = require('./src/routes/simulation.route');
 const negotiationRoutes = require('./src/routes/negotiation.route');
 const nudgeRoutes = require('./src/routes/nudge.route');
 const spendDnaRoutes = require('./src/routes/spendDNA.route');
-
-
+const eventRoutes = require('./src/routes/event.route');
+const wasteRoutes = require('./src/routes/waste.route');
+const scoreRoutes = require('./src/routes/score.route');
 
 const app = express();
 
@@ -55,6 +56,9 @@ app.use('/api/simulation', simulationRoutes);
 app.use('/api/negotiation', negotiationRoutes);
 app.use('/api/nudges', nudgeRoutes);
 app.use('/api/spend-dna', spendDnaRoutes);
+app.use('/api/event', eventRoutes);
+app.use('/api/waste', wasteRoutes);
+app.use('/api/score', scoreRoutes);
 
 
 /* ---------- Health Check ---------- */
