@@ -15,8 +15,9 @@ import { cn } from "@/lib/utils";
 
 const mainNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: Brain, label: "Financial Twin", href: "/simulation" },
+  { icon: Brain, label: "Financial Twin", href: "/financial-twin" },
   { icon: Dna, label: "Spend DNA", href: "/spend-dna" },
+  { icon: Sparkles, label: "EmotionAnalysis", href: "/emotion-analysis" },
 ];
 
 const toolsNavItems = [
