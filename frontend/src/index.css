@@ -1,0 +1,121 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================== */
+/* BASE THEME VARIABLES  */
+/* ===================== */
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --primary: 225 73% 57%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 222 47% 12%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 222 47% 14%;
+    --muted-foreground: 215 20% 55%;
+
+    --accent: 173 80% 50%;
+    --accent-foreground: 222 47% 6%;
+
+    --destructive: 0 72% 51%;
+    --border: 222 47% 16%;
+    --input: 222 47% 14%;
+    --ring: 225 73% 57%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 222 47% 7%;
+    --sidebar-border: 222 47% 14%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: "Inter", sans-serif;
+  }
+}
+
+/* ===================== */
+/* COMPONENT STYLES      */
+/* ===================== */
+@layer components {
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl;
+  }
+
+  .input-field {
+    @apply w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50;
+  }
+
+  .feature-card {
+    @apply bg-card border border-border rounded-xl p-6 transition hover:border-primary/50;
+  }
+
+  .stat-card {
+    @apply bg-card border border-border rounded-xl p-5;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-secondary;
+  }
+
+.sidebar-item-active {
+  @apply bg-primary/10 text-foreground backdrop-blur-md border border-primary/30;
+}
+
+
+  .badge-success {
+    @apply bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full text-xs;
+  }
+}
+
+/* ===================== */
+/* SONNER TOAST STYLES   */
+/* ===================== */
+
+[data-sonner-toaster] {
+  --toast-bg: hsl(var(--card));
+  --toast-border: hsl(var(--border));
+  --toast-text: hsl(var(--foreground));
+  --toast-success: hsl(var(--success, 142 71% 45%));
+  --toast-error: hsl(var(--destructive));
+  --toast-warning: hsl(var(--warning, 38 92% 50%));
+}
+
+[data-sonner-toast] {
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  border: 1px solid var(--toast-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-weight: 500;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+[data-sonner-toast][data-type="success"] {
+  border-left: 4px solid var(--toast-success);
+  box-shadow: 0 12px 40px rgba(16, 185, 129, 0.35);
+}
+
+[data-sonner-toast][data-type="error"] {
+  border-left: 4px solid var(--toast-error);
+  box-shadow: 0 12px 40px rgba(239, 68, 68, 0.35);
+}
+
+[data-sonner-toast][data-type="warning"] {
+  border-left: 4px solid var(--toast-warning);
+  box-shadow: 0 12px 40px rgba(245, 158, 11, 0.35);
+}
