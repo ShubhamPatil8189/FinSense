@@ -9,6 +9,8 @@ const expenseRoutes = require('./src/routes/expense.route');
 const incomeRoutes = require('./src/routes/income.route');
 const goalRoutes = require('./src/routes/goal.route');
 const groupRoutes = require('./src/routes/group.route');
+const emotionRoutes = require('./src/routes/emotion.route');
+
 
 const app = express();
 
@@ -43,6 +45,7 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/income', incomeRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/emotion', emotionRoutes);
 
 /* ---------- Health Check ---------- */
 app.get('/', (req, res) => {
