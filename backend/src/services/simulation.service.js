@@ -1,5 +1,5 @@
-const Expense = require('../modules/expense.model');
-const Income = require('../modules/income.model');
+const Expense = require('../models/expense.model');
+const Income = require('../models/income.model');
 
 const runFinancialSimulation = async (userId, scenarioData) => {
   try {

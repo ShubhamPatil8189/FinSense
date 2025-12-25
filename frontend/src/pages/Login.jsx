@@ -17,23 +17,62 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = (e) => {
+  /* ---------------- LOGIN HANDLER ---------------- */
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🔔 Toast notification
-    toast({
-      title: "Login Successful 🎉",
-      description: "Welcome back to FinSense",
-      duration: 3000,
-    });
+    try {
+      setLoading(true);
 
-    // simulate successful login
-    setTimeout(() => {
+      const res = await fetch("http://localhost:4000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      /* ❌ INVALID CREDENTIALS */
+      if (res.status === 401) {
+        throw new Error("Invalid credentials");
+      }
+
+      /* ❌ EMAIL NOT VERIFIED */
+      if (res.status === 403) {
+        throw new Error("Email not verified. Please verify your email.");
+      }
+
+      /* ❌ OTHER ERRORS */
+      if (!res.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      /* ✅ SUCCESS */
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      toast({
+        title: "Login successful 🎉",
+        description: `Welcome back, ${data.user.name}`,
+        duration: 3000,
+      });
+
       navigate("/dashboard");
-    }, 800);
+
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: err.message,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,7 +83,7 @@ export default function Login() {
         <div className="w-full max-w-md">
           <div className="glass-card p-8 rounded-2xl border border-border">
 
-            {/* Logo */}
+            {/* LOGO */}
             <div className="text-center mb-8">
               <div className="w-14 h-14 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-7 h-7 text-primary-foreground" />
@@ -55,9 +94,10 @@ export default function Login() {
               </p>
             </div>
 
-            {/* Form */}
+            {/* FORM */}
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
+
+              {/* EMAIL */}
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Email Address
@@ -75,7 +115,7 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Password */}
+              {/* PASSWORD */}
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Password
@@ -100,13 +140,18 @@ export default function Login() {
                 </div>
               </div>
 
-              <Button type="submit" size="lg" className="w-full">
-                Log In
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full"
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Log In"}
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </form>
 
-            {/* Signup */}
+            {/* SIGNUP */}
             <p className="text-center text-sm text-muted-foreground mt-6">
               Don’t have an account?{" "}
               <Link to="/signup" className="text-primary hover:underline">
@@ -114,7 +159,7 @@ export default function Login() {
               </Link>
             </p>
 
-            {/* Security */}
+            {/* SECURITY */}
             <div className="flex items-center justify-center gap-2 mt-6 pt-6 border-t border-border">
               <Shield className="w-4 h-4 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">

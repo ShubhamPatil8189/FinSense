@@ -46,8 +46,8 @@ Respond in 4-5 simple lines.
 
 exports.getFinancialSummary = async (req, res) => {
   try {
-    const Expense = require('../modules/expense.model');
-    const Income = require('../modules/income.model');
+    const Expense = require('../models/expense.model');
+    const Income = require('../models/income.model');
 
     const expenses = await Expense.find({ userId: req.user._id });
     const incomes = await Income.find({ userId: req.user._id });

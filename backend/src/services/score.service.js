@@ -1,6 +1,6 @@
-const Expense = require('../modules/expense.model');
-const Income = require('../modules/income.model');
-const Goal = require('../modules/goal.model');
+const Expense = require('../models/expense.model');
+const Income = require('../models/income.model');
+const Goal = require('../models/goal.model');
 
 const calculateFutureProofScore = async (userId) => {
   try {

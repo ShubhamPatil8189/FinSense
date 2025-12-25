@@ -1,4 +1,4 @@
-const Goal = require('../modules/goal.model');
+const Goal = require('../models/goal.model');
 
 exports.addGoal = async (req, res) => {
   try {

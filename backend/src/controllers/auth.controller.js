@@ -1,4 +1,4 @@
-const User = require('../modules/user.model');
+const User = require('../models/user.model');
 const { generateToken } = require('../config/jwt');
 const { sendOTPEmail } = require('../config/email');
 

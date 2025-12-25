@@ -1,5 +1,5 @@
-const Event = require('../modules/event.model');
-const Expense = require('../modules/expense.model');
+const Event = require('../models/event.model');
+const Expense = require('../models/expense.model');
 
 exports.predictEvents = async (req, res) => {
   try {

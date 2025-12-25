@@ -1,4 +1,4 @@
-const Expense = require('../modules/expense.model');
+const Expense = require('../models/expense.model');
 const { model } = require('../config/gemini');
 
 exports.analyzeEmotion = async (req, res) => {

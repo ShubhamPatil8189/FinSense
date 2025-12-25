@@ -1,4 +1,4 @@
-const Income = require('../modules/income.model');
+const Income = require('../models/income.model');
 
 exports.addIncome = async (req, res) => {
   try {

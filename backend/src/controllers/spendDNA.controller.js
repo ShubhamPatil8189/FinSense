@@ -1,4 +1,4 @@
-const Expense = require('../modules/expense.model');
+const Expense = require('../models/expense.model');
 const { genAI } = require('../config/gemini');
 
 exports.analyzeSpendDNA = async (req, res) => {
