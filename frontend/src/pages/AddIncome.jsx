@@ -1,0 +1,91 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Check } from "lucide-react";
+
+export default function AddIncome() {
+  const navigate = useNavigate();
+
+  const [amount, setAmount] = useState("");
+  const [source, setSource] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    if (!amount || !source) {
+      alert("Amount and Source are required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await fetch("http://localhost:4000/api/income", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: Number(amount),
+          source,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to add income");
+      }
+
+      navigate("/income");
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <DashboardLayout title="Add Income" subtitle="Record a new income source">
+      <div className="max-w-2xl mx-auto bg-card border border-border rounded-xl p-6">
+
+        <div className="mb-6">
+          <label className="text-sm text-muted-foreground mb-2 block">
+            Amount
+          </label>
+          <Input
+            type="number"
+            placeholder="Enter income amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-6">
+          <label className="text-sm text-muted-foreground mb-2 block">
+            Income Source
+          </label>
+          <Input
+            placeholder="e.g. Salary, Freelancing, Business"
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+          />
+        </div>
+
+        <div className="flex justify-end gap-4">
+          <Button variant="ghost" onClick={() => navigate(-1)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={loading}>
+            <Check className="w-4 h-4 mr-2" />
+            {loading ? "Saving..." : "Save Income"}
+          </Button>
+        </div>
+
+      </div>
+    </DashboardLayout>
+  );
+}

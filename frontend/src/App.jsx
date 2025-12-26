@@ -22,10 +22,11 @@ import SpendDNA from "./pages/SpendDNA";
 import Goals from "./pages/Goals";
 import AddGoal from "./pages/AddGoalsForm";
 import Settings from "./pages/Settings";
-
-
+import AddIncome from "./pages/AddIncome";
+import IncomeDetails from "./pages/IncomeDetails";
 /* FALLBACK */
 import NotFound from "./pages/NotFound";
+import ExpenseHistory from "./pages/ExpenseHistory";
 
 const queryClient = new QueryClient();
 
@@ -49,8 +50,12 @@ const App = () => (
           <Route path="/add-expense" element={<AddExpense />} />
           
           {/* Expenses */}
+          <Route path="/expense" element={<ExpenseHistory/>}/>
           <Route path="/expenses/add" element={<AddExpense />} />
-          
+          {/* Inome */}
+          <Route path="/income/add" element={<AddIncome />} />
+          <Route path="/income" element={<IncomeDetails />} />
+
           {/* AI Features - Phase 1 */}
           <Route path="/emotion-analysis" element={<EmotionAnalysis />} />
           <Route path="/financial-twin" element={<FinancialTwin />} />

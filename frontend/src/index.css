@@ -118,3 +118,30 @@
   border-left: 4px solid var(--toast-warning);
   box-shadow: 0 12px 40px rgba(245, 158, 11, 0.35);
 }
+/* ===================== */
+/* BLACK SCROLLBAR       */
+/* ===================== */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background)); /* dark background */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #000; /* black scrollbar */
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #333;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #000 hsl(var(--background));
+}

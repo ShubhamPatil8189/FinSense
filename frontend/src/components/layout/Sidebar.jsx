@@ -10,14 +10,21 @@ import {
   Settings,
   Sparkles,
   PlusCircle,
+  Receipt,
+  TrendingUp,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 const mainNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
+  { icon: Receipt, label: "Expense", href: "/expense" },
   { icon: Brain, label: "Financial Twin", href: "/financial-twin" },
   { icon: Dna, label: "Spend DNA", href: "/spend-dna" },
   { icon: Sparkles, label: "EmotionAnalysis", href: "/emotion-analysis" },
+  { icon: TrendingUp, label: "Income Detail", href: "/income" },
+
+
 ];
 
 const toolsNavItems = [

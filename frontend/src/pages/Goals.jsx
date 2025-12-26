@@ -1,143 +1,81 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import {
-  Target,
-  PlusCircle,
-  Plane,
-  Car,
-  Home,
-  GraduationCap,
-  PiggyBank,
-  Smartphone,
-  Gift,
-  TrendingUp,
-  Calendar,
-  Sparkles,
-  CheckCircle,
-  MoreVertical,
-} from "lucide-react";
-import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
+import { PlusCircle, Calendar, PiggyBank,Target } from "lucide-react";
+import axios from "axios";
 
-/* ================= DATA ================= */
-
-const initialGoals = [
-  {
-    id: 1,
-    title: "Emergency Fund",
-    icon: PiggyBank,
-    target: 300000,
-    current: 180000,
-    deadline: "Dec 2024",
-    color: "bg-success",
-    monthlySaving: 15000,
-    priority: "high",
-    term: "long",
-  },
-  {
-    id: 2,
-    title: "New iPhone 16",
-    icon: Smartphone,
-    target: 120000,
-    current: 45000,
-    deadline: "Mar 2025",
-    color: "bg-primary",
-    monthlySaving: 8000,
-    priority: "medium",
-    term: "short",
-  },
-  {
-    id: 3,
-    title: "Goa Trip",
-    icon: Plane,
-    target: 50000,
-    current: 32000,
-    deadline: "Feb 2025",
-    color: "bg-accent",
-    monthlySaving: 6000,
-    priority: "low",
-    term: "short",
-  },
-  {
-    id: 4,
-    title: "Car Down Payment",
-    icon: Car,
-    target: 500000,
-    current: 125000,
-    deadline: "Jun 2025",
-    color: "bg-warning",
-    monthlySaving: 25000,
-    priority: "high",
-    term: "long",
-  },
-];
-
-const completedGoals = [
-  { title: "Birthday Gift for Mom", amount: 15000, completedDate: "Oct 2024" },
-  { title: "New Laptop", amount: 85000, completedDate: "Aug 2024" },
-];
-
-const suggestedGoals = [
-  { title: "Wedding Fund", icon: Gift, suggestedAmount: 500000 },
-  { title: "Home Down Payment", icon: Home, suggestedAmount: 1000000 },
-  { title: "Higher Education", icon: GraduationCap, suggestedAmount: 300000 },
-];
-
-/* ================= COMPONENT ================= */
+const API = axios.create({
+  baseURL: "http://localhost:4000/api",
+  withCredentials: true,
+});
 
 export default function Goals() {
-  const [goals, setGoals] = useState(initialGoals);
+  const [goals, setGoals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const updatePriority = (id, priority) => {
-    setGoals((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, priority } : g))
-    );
-  };
+  useEffect(() => {
+    const fetchGoals = async () => {
+      try {
+        const res = await API.get("/goals/prioritize");
+        setGoals(res.data.goals || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const totalSaved = goals.reduce((a, g) => a + g.current, 0);
-  const totalTarget = goals.reduce((a, g) => a + g.target, 0);
+    fetchGoals();
+  }, []);
+
+  const totalSaved = goals.reduce((a, g) => a + (g.currentAmount || 0), 0);
+  const totalTarget = goals.reduce((a, g) => a + (g.targetAmount || 0), 0);
 
   return (
-    <DashboardLayout
-      title="Goals"
-      subtitle="Track your savings goals"
-      headerAction={
-        <div className="flex gap-3">
-          <Link to="/add-goal">
-            <Button variant="outline">
-              <PlusCircle className="w-4 h-4 mr-2" />
-              Add Goal
-            </Button>
-          </Link>
-          <Button className="bg-gradient-to-r from-primary to-accent text-white">
-            ✨ Auto-Optimize
-          </Button>
-        </div>
-      }
-    >
-      {/* ================= SUMMARY ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="stat-card">
-          <span className="text-sm text-muted-foreground">Active Goals</span>
-          <p className="text-2xl font-bold">{goals.length}</p>
+    <DashboardLayout title="Goals" subtitle="Track your financial goals">
+      
+      <div className="flex items-center gap-3 mb-2">
+  <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
+    <Target className="w-5 h-5 text-accent" />
+  </div>
+  <h2 className="text-2xl font-bold">Financial Goals</h2>
+</div>
+
+<p className="text-muted-foreground mb-8">
+  Set, track, and achieve your short-term and long-term financial goals.
+</p>
+
+      {/* ================= TOP ACTION BAR ================= */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="text-sm text-muted-foreground">
+          {goals.length} Active Goals
         </div>
 
+        <Button
+          onClick={() => navigate("/goals/add")}
+          className="bg-gradient-to-r from-primary to-accent text-white"
+        >
+          <PlusCircle className="w-4 h-4 mr-2" />
+          Add Goal
+        </Button>
+      </div>
+
+      {/* ================= SUMMARY ================= */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="stat-card">
           <span className="text-sm text-muted-foreground">Total Saved</span>
-          <p className="text-2xl font-bold">
-            ₹{(totalSaved / 100000).toFixed(1)}L
-          </p>
+          <p className="text-2xl font-bold">₹{totalSaved.toLocaleString()}</p>
         </div>
 
         <div className="stat-card">
           <span className="text-sm text-muted-foreground">Total Target</span>
-          <p className="text-2xl font-bold">
-            ₹{(totalTarget / 100000).toFixed(1)}L
-          </p>
+          <p className="text-2xl font-bold">₹{totalTarget.toLocaleString()}</p>
         </div>
 
-        <div className="stat-card bg-gradient-to-br from-primary/20 to-card">
+        <div className="stat-card">
           <span className="text-sm text-muted-foreground">Overall Progress</span>
           <p className="text-2xl font-bold">
             {totalTarget > 0
@@ -148,68 +86,50 @@ export default function Goals() {
         </div>
       </div>
 
-      {/* ================= ACTIVE GOALS ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-lg font-semibold">Active Goals</h3>
-
+      {/* ================= GOALS LIST ================= */}
+      {loading ? (
+        <p>Loading goals...</p>
+      ) : goals.length === 0 ? (
+        <div className="text-center py-12">
+          <PiggyBank className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+          <p className="text-muted-foreground mb-4">
+            No goals created yet
+          </p>
+          <Button onClick={() => navigate("/goals/add")}>
+            Create First Goal
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {goals.map((goal) => {
-            // ✅ CORRECT & SAFE FORMULA
             const progress =
-              goal.target > 0
-                ? Math.min((goal.current / goal.target) * 100, 100)
+              goal.targetAmount > 0
+                ? Math.min(
+                    (goal.currentAmount / goal.targetAmount) * 100,
+                    100
+                  )
                 : 0;
 
             return (
               <div
-                key={goal.id}
+                key={goal._id}
                 className="bg-card border border-border rounded-xl p-6"
               >
-                {/* Header */}
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex gap-4 items-center">
-                    <div
-                      className={`w-12 h-12 rounded-xl ${goal.color} flex items-center justify-center`}
-                    >
-                      <goal.icon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">{goal.title}</h4>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="w-3 h-3" />
-                        {goal.deadline}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Priority Controls (FIXED LAYOUT) */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs px-2 py-1 rounded-full bg-secondary whitespace-nowrap">
-                      {goal.term === "short" ? "Short-Term" : "Long-Term"}
+                <div className="flex justify-between mb-2">
+                  <h3 className="font-semibold">{goal.title}</h3>
+                  {goal.deadline && (
+                    <span className="flex items-center text-xs text-muted-foreground gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(goal.deadline).toLocaleDateString()}
                     </span>
-
-                    <select
-                      value={goal.priority}
-                      onChange={(e) =>
-                        updatePriority(goal.id, e.target.value)
-                      }
-                      className="h-8 px-2 text-xs rounded-md bg-secondary border border-border focus:outline-none"
-                    >
-                      <option value="high">HIGH</option>
-                      <option value="medium">MEDIUM</option>
-                      <option value="low">LOW</option>
-                    </select>
-
-                    <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                  </div>
+                  )}
                 </div>
 
-                {/* Progress */}
                 <div className="mb-3">
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">
-                      ₹{goal.current.toLocaleString()} of ₹
-                      {goal.target.toLocaleString()}
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>
+                      ₹{goal.currentAmount.toLocaleString()} of ₹
+                      {goal.targetAmount.toLocaleString()}
                     </span>
                     <span className="font-semibold">
                       {Math.round(progress)}%
@@ -218,86 +138,14 @@ export default function Goals() {
                   <Progress value={progress} className="h-2" />
                 </div>
 
-                <div className="flex justify-between text-sm">
-                  <span>
-                    Monthly:{" "}
-                    <b>₹{goal.monthlySaving.toLocaleString()}</b>
-                  </span>
-                  <span>
-                    Remaining:{" "}
-                    <b>
-                      ₹{(goal.target - goal.current).toLocaleString()}
-                    </b>
-                  </span>
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  Priority Score: <b>{goal.priority.toFixed(1)}</b>
+                </p>
               </div>
             );
           })}
         </div>
-
-        {/* ================= RIGHT COLUMN (UNCHANGED) ================= */}
-        <div className="space-y-6">
-          <div className="bg-card border rounded-xl p-6">
-            <div className="flex gap-2 mb-4">
-              <CheckCircle className="w-5 h-5 text-success" />
-              <h3 className="font-semibold">Completed Goals</h3>
-            </div>
-
-            {completedGoals.map((g, i) => (
-              <div
-                key={i}
-                className="flex justify-between py-2 border-b last:border-0"
-              >
-                <div>
-                  <p className="text-sm font-medium">{g.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {g.completedDate}
-                  </p>
-                </div>
-                <span className="text-success font-semibold">
-                  ₹{g.amount.toLocaleString()}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-gradient-to-br from-primary/10 to-card border rounded-xl p-6">
-            <div className="flex gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">Suggested Goals</h3>
-            </div>
-
-            {suggestedGoals.map((g, i) => (
-              <button
-                key={i}
-                className="w-full flex items-center gap-3 p-3 bg-secondary/50 rounded-lg mb-2"
-              >
-                <g.icon className="w-5 h-5 text-primary" />
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium">{g.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Target: ₹{(g.suggestedAmount / 100000).toFixed(0)}L
-                  </p>
-                </div>
-                <PlusCircle className="w-4 h-4 text-primary" />
-              </button>
-            ))}
-          </div>
-          {/* Tips */}
-          <div className="bg-card border border-border rounded-xl p-6 mt-6">
-            <h3 className="font-semibold text-foreground mb-3">
-              💡 Savings Tip
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Automating your savings can help you reach goals 2x faster.
-              Set up auto-transfers on payday!
-            </p>
-          </div>
-
-        </div>
-
-      </div>
-
+      )}
     </DashboardLayout>
   );
 }
