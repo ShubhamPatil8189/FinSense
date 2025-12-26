@@ -4,6 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AddIncome() {
   const navigate = useNavigate();
@@ -12,9 +13,19 @@ export default function AddIncome() {
   const [source, setSource] = useState("");
   const [loading, setLoading] = useState(false);
 
+  /* ================= ADD INCOME ================= */
   const handleSave = async () => {
     if (!amount || !source) {
-      alert("Amount and Source are required");
+      toast.error("Amount and source are required");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    // ❌ No token → cannot add income
+    if (!token) {
+      toast.error("Please login first");
+      navigate("/login");
       return;
     }
 
@@ -23,9 +34,9 @@ export default function AddIncome() {
 
       const res = await fetch("http://localhost:4000/api/income", {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ REQUIRED
         },
         body: JSON.stringify({
           amount: Number(amount),
@@ -39,10 +50,10 @@ export default function AddIncome() {
         throw new Error(data.error || "Failed to add income");
       }
 
+      toast.success("Income added successfully 💰");
       navigate("/income");
     } catch (error) {
-      console.error(error);
-      alert(error.message);
+      toast.error(error.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -52,6 +63,7 @@ export default function AddIncome() {
     <DashboardLayout title="Add Income" subtitle="Record a new income source">
       <div className="max-w-2xl mx-auto bg-card border border-border rounded-xl p-6">
 
+        {/* Amount */}
         <div className="mb-6">
           <label className="text-sm text-muted-foreground mb-2 block">
             Amount
@@ -64,6 +76,7 @@ export default function AddIncome() {
           />
         </div>
 
+        {/* Source */}
         <div className="mb-6">
           <label className="text-sm text-muted-foreground mb-2 block">
             Income Source
@@ -75,6 +88,7 @@ export default function AddIncome() {
           />
         </div>
 
+        {/* Actions */}
         <div className="flex justify-end gap-4">
           <Button variant="ghost" onClick={() => navigate(-1)}>
             Cancel

@@ -1,144 +1,19 @@
-// import { useNavigate } from "react-router-dom";
-// import { DashboardLayout } from "@/components/layout/DashboardLayout";
-// import { Button } from "@/components/ui/button";
-
-// export default function AddGoal() {
-//   const navigate = useNavigate();
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     // ONLY navigation (no data logic)
-//     navigate("/goals");
-//   };
-
-//   return (
-//     <DashboardLayout
-//       title="Add Goal"
-//       subtitle="Create a new financial goal"
-//     >
-//       <div className="max-w-2xl mx-auto">
-//         <div className="bg-card border border-border rounded-2xl p-8">
-//           {/* Header */}
-//           <div className="mb-8">
-//             <h2 className="text-2xl font-bold text-foreground mb-1">
-//               New Goal Details
-//             </h2>
-//             <p className="text-sm text-muted-foreground">
-//               Define your target, priority, and timeline
-//             </p>
-//           </div>
-
-//           {/* Form */}
-//           <form onSubmit={handleSubmit} className="space-y-6">
-//             {/* Goal Title */}
-//             <div>
-//               <label className="block text-sm font-medium text-foreground mb-2">
-//                 Goal Title
-//               </label>
-//               <input
-//                 type="text"
-//                 placeholder="e.g. Emergency Fund"
-//                 className="input-field"
-//                 required
-//               />
-//             </div>
-
-//             {/* Amounts */}
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//               <div>
-//                 <label className="block text-sm font-medium text-foreground mb-2">
-//                   Target Amount (₹)
-//                 </label>
-//                 <input
-//                   type="number"
-//                   placeholder="300000"
-//                   className="input-field"
-//                   required
-//                 />
-//               </div>
-
-//               <div>
-//                 <label className="block text-sm font-medium text-foreground mb-2">
-//                   Already Saved (₹)
-//                 </label>
-//                 <input
-//                   type="number"
-//                   placeholder="50000"
-//                   className="input-field"
-//                 />
-//               </div>
-//             </div>
-
-//             {/* Deadline */}
-//             <div>
-//               <label className="block text-sm font-medium text-foreground mb-2">
-//                 Target Date
-//               </label>
-//               <input type="date" className="input-field" required />
-//             </div>
-
-//             {/* Priority & Duration */}
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//               <div>
-//                 <label className="block text-sm font-medium text-foreground mb-2">
-//                   Priority
-//                 </label>
-//                 <select className="input-field">
-//                   <option value="high">High Priority</option>
-//                   <option value="medium">Medium Priority</option>
-//                   <option value="low">Low Priority</option>
-//                 </select>
-//               </div>
-
-//               <div>
-//                 <label className="block text-sm font-medium text-foreground mb-2">
-//                   Goal Duration
-//                 </label>
-//                 <select className="input-field">
-//                   <option value="short">Short Term</option>
-//                   <option value="long">Long Term</option>
-//                 </select>
-//               </div>
-//             </div>
-
-//             {/* Actions */}
-//             <div className="flex justify-end gap-3 pt-6 border-t border-border">
-//               <Button
-//                 type="button"
-//                 variant="secondary"
-//                 onClick={() => navigate("/goals")}
-//               >
-//                 Cancel
-//               </Button>
-
-//               <Button
-//                 type="submit"
-//                 className="bg-gradient-to-r from-primary to-accent text-white"
-//               >
-//                 Save Goal
-//               </Button>
-//             </div>
-//           </form>
-//         </div>
-//       </div>
-//     </DashboardLayout>
-//   );
-// }
-
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { addGoalApi } from "../config/goal.api";
+import { toast } from "sonner";
+
 export default function AddGoal() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     title: "",
     targetAmount: "",
-    currentAmount: "",
     deadline: "",
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -147,18 +22,42 @@ export default function AddGoal() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error("Please login to add a goal");
+      navigate("/login");
+      return;
+    }
+
     try {
-      await addGoalApi({
-        title: form.title,
-        targetAmount: Number(form.targetAmount),
-        currentAmount: Number(form.currentAmount || 0),
-        deadline: form.deadline,
+      setLoading(true);
+
+      const res = await fetch("http://localhost:4000/api/goals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ REQUIRED
+        },
+        body: JSON.stringify({
+          title: form.title,
+          targetAmount: Number(form.targetAmount),
+          deadline: form.deadline,
+        }),
       });
 
-      navigate("/goals"); // ✅ success redirect
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to add goal");
+      }
+
+      toast.success("Goal added successfully 🎯");
+      navigate("/goals");
     } catch (err) {
-      console.error(err);
-      alert("Failed to add goal");
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -168,6 +67,7 @@ export default function AddGoal() {
         <div className="bg-card border border-border rounded-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
 
+            {/* Title */}
             <div>
               <label className="block text-sm font-medium mb-2">
                 Goal Title
@@ -176,41 +76,53 @@ export default function AddGoal() {
                 name="title"
                 value={form.title}
                 onChange={handleChange}
+                placeholder="Buy New Laptop"
                 className="input-field"
                 required
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Target Amount */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Target Amount
+              </label>
               <input
                 name="targetAmount"
                 type="number"
-                placeholder="Target Amount"
+                placeholder="80000"
                 className="input-field"
                 onChange={handleChange}
                 required
               />
+            </div>
+
+            {/* Deadline */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Deadline
+              </label>
               <input
-                name="currentAmount"
-                type="number"
-                placeholder="Already Saved"
+                name="deadline"
+                type="date"
                 className="input-field"
                 onChange={handleChange}
+                required
               />
             </div>
 
-            <input
-              name="deadline"
-              type="date"
-              className="input-field"
-              onChange={handleChange}
-            />
-
+            {/* Actions */}
             <div className="flex justify-end gap-3 pt-6 border-t">
-              <Button type="button" variant="secondary" onClick={() => navigate("/goals")}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => navigate("/goals")}
+              >
                 Cancel
               </Button>
-              <Button type="submit">Save Goal</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Saving..." : "Save Goal"}
+              </Button>
             </div>
 
           </form>

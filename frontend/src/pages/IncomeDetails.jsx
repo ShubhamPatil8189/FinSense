@@ -7,52 +7,86 @@ import {
   TrendingUp,
   Calendar,
   IndianRupee,
-  PlusCircle,TrendingUp 
+  PlusCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function IncomeDetails() {
+  const navigate = useNavigate();
+
   const [incomes, setIncomes] = useState([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const navigate = useNavigate();
-
+  /* ================= FETCH INCOME DETAILS ================= */
   useEffect(() => {
     const fetchIncome = async () => {
+      const token = localStorage.getItem("token");
+
+      // ❌ No token → cannot access
+      if (!token) {
+        toast.error("Please login to view income details");
+        navigate("/login");
+        return;
+      }
+
       try {
         const res = await fetch(
           "http://localhost:4000/api/income/details",
-          { credentials: "include" }
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // ✅ REQUIRED
+            },
+          }
         );
+
+        if (res.status === 401) {
+          throw new Error("Session expired");
+        }
+
         const data = await res.json();
-        setIncomes(data.incomes || []);
-        setTotalIncome(data.totalIncome || 0);
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to fetch income");
+        }
+
+        // ✅ Ensure sorted by date (newest first)
+        const sortedIncomes = (data.incomes || []).sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
+
+        setIncomes(sortedIncomes);
+
+        // ✅ Prefer backend-calculated total
+        setTotalIncome(data.totalIncome ?? 0);
       } catch (err) {
-        console.error(err);
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem("token");
+        navigate("/login");
       } finally {
         setLoading(false);
       }
     };
 
     fetchIncome();
-  }, []);
+  }, [navigate]);
 
   return (
     <DashboardLayout
       title="Income Details"
       subtitle="Overview of your earnings"
     >
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center">
+          <TrendingUp className="w-5 h-5 text-success" />
+        </div>
+        <h2 className="text-2xl font-bold">Income Details</h2>
+      </div>
 
-        <div className="flex items-center gap-3 mb-2">
-  <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center">
-    <TrendingUp className="w-5 h-5 text-success" />
-  </div>
-  <h2 className="text-2xl font-bold">Income Details</h2>
-</div>
-
-<p className="text-muted-foreground mb-8">
-  Track all your income sources and total earnings in one place.
-</p>
+      <p className="text-muted-foreground mb-8">
+        Track all your income sources and total earnings in one place.
+      </p>
 
       {/* ================= ADD INCOME BUTTON ================= */}
       <div className="flex justify-end mb-6">

@@ -11,9 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Check } from "lucide-react";
+import { toast } from "sonner";
 
 const categories = [
-  "Food & Dining",
+  "Food",
   "Transportation",
   "Shopping",
   "Entertainment",
@@ -35,9 +36,19 @@ export default function AddExpense() {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
+  /* ---------------- SAVE EXPENSE ---------------- */
   const handleSave = async () => {
     if (!amount || !category) {
-      alert("Amount and Category are required");
+      toast.error("Amount and Category are required");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    // ❌ No token → fail Test Case 12
+    if (!token) {
+      toast.error("Please login to continue");
+      navigate("/login");
       return;
     }
 
@@ -46,9 +57,9 @@ export default function AddExpense() {
 
       const res = await fetch("http://localhost:4000/api/expenses", {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ REQUIRED
         },
         body: JSON.stringify({
           amount: Number(amount),
@@ -60,14 +71,27 @@ export default function AddExpense() {
 
       const data = await res.json();
 
+      // ❌ Token invalid / expired
+      if (res.status === 401) {
+        throw new Error("Session expired. Please login again.");
+      }
+
       if (!res.ok) {
         throw new Error(data.error || "Failed to add expense");
       }
 
+      toast.success("Expense added successfully 💸");
       navigate("/dashboard");
+
     } catch (error) {
-      console.error(error);
-      alert(error.message);
+      toast.error("Error adding expense", {
+        description: error.message,
+      });
+
+      if (error.message.includes("login")) {
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
     } finally {
       setLoading(false);
     }
@@ -100,17 +124,12 @@ export default function AddExpense() {
             Category
           </label>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="bg-secondary text-white border-border">
+            <SelectTrigger className="bg-secondary border-border">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
-
-            <SelectContent className="!bg-black !text-white border border-border">
+            <SelectContent className="bg-black text-white border border-border">
               {categories.map((cat) => (
-                <SelectItem
-                  key={cat}
-                  value={cat}
-                  className="focus:bg-gray-800 focus:text-white"
-                >
+                <SelectItem key={cat} value={cat}>
                   {cat}
                 </SelectItem>
               ))}
@@ -124,17 +143,12 @@ export default function AddExpense() {
             Mood
           </label>
           <Select value={mood} onValueChange={setMood}>
-            <SelectTrigger className="bg-secondary text-white border-border">
+            <SelectTrigger className="bg-secondary border-border">
               <SelectValue />
             </SelectTrigger>
-
-            <SelectContent className="!bg-black !text-white border border-border">
+            <SelectContent className="bg-black text-white border border-border">
               {moods.map((m) => (
-                <SelectItem
-                  key={m}
-                  value={m}
-                  className="focus:bg-gray-800 focus:text-white"
-                >
+                <SelectItem key={m} value={m}>
                   {m.charAt(0).toUpperCase() + m.slice(1)}
                 </SelectItem>
               ))}
@@ -150,7 +164,7 @@ export default function AddExpense() {
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="e.g. Dinner with friends"
+            placeholder="e.g. Lunch at restaurant"
             className="bg-secondary border-border"
           />
         </div>
