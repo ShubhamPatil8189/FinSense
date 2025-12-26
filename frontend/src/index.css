@@ -72,10 +72,9 @@
     @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-secondary;
   }
 
-.sidebar-item-active {
-  @apply bg-primary/10 text-foreground backdrop-blur-md border border-primary/30;
-}
-
+  .sidebar-item-active {
+    @apply bg-primary/10 text-foreground backdrop-blur-md border border-primary/30;
+  }
 
   .badge-success {
     @apply bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full text-xs;

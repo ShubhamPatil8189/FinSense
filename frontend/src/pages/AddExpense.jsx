@@ -1,143 +1,209 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
-  PlusCircle,
-  Receipt,
-  Calendar,
-  Tag,
-  CreditCard,
-  Wallet,
-  Utensils,
-  Car,
-  ShoppingBag,
-  Home,
-  Gamepad2,
-  Heart,
-  Plane,
-  GraduationCap,
-  MoreHorizontal,
-  Sparkles,
-  TrendingUp,
-  ArrowUpRight,
-} from "lucide-react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Sparkles, ScanLine, Check, Sparkle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const categories = [
-  { id: "food", label: "Food & Dining", icon: Utensils, color: "bg-chart-orange" },
-  { id: "transport", label: "Transport", icon: Car, color: "bg-chart-blue" },
-  { id: "shopping", label: "Shopping", icon: ShoppingBag, color: "bg-chart-red" },
-  { id: "rent", label: "Rent & Bills", icon: Home, color: "bg-primary" },
-  { id: "entertainment", label: "Entertainment", icon: Gamepad2, color: "bg-accent" },
-  { id: "health", label: "Health", icon: Heart, color: "bg-success" },
-  { id: "travel", label: "Travel", icon: Plane, color: "bg-warning" },
-  { id: "education", label: "Education", icon: GraduationCap, color: "bg-chart-blue" },
-  { id: "other", label: "Other", icon: MoreHorizontal, color: "bg-muted" },
-];
-
-const paymentMethods = [
-  { id: "upi", label: "UPI", icon: Wallet },
-  { id: "credit", label: "Credit Card", icon: CreditCard },
-  { id: "debit", label: "Debit Card", icon: CreditCard },
-  { id: "cash", label: "Cash", icon: Receipt },
+  "Food & Dining",
+  "Transportation",
+  "Shopping",
+  "Entertainment",
+  "Bills & Utilities",
+  "Health",
+  "Travel",
+  "Education",
+  "Other",
 ];
 
 export default function AddExpense() {
   const navigate = useNavigate();
-
   const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("food"); // ✅ default
-  const [selectedPayment, setSelectedPayment] = useState("upi");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [repeatExpense, setRepeatExpense] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSave = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("No token found. Please login again.");
+      return;
+    }
 
-    const expense = {
-      amount,
-      description,
-      category: selectedCategory,
-      payment: selectedPayment,
-      date,
-    };
+    try {
+      setLoading(true);
 
-    console.log("Expense Added:", expense);
+      const res = await fetch("http://localhost:4000/api/expenses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: Number(amount),
+          category,
+          mood: "happy",
+          description,
+        }),
+      });
 
-    // ✅ reset form
-    setAmount("");
-    setDescription("");
-    setSelectedCategory("food");
-    setSelectedPayment("upi");
+      const data = await res.json();
 
-    // ✅ redirect (same feeling as before)
-    navigate("/dashboard");
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to add expense");
+      }
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <DashboardLayout title="Add Expense" subtitle="Track your spending in real-time">
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Amount */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <label className="block text-sm font-medium mb-4">Amount</label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0"
-              className="w-full text-4xl font-bold bg-transparent focus:outline-none"
-              required
-            />
-          </div>
+    <DashboardLayout title="Add Expense">
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Add New Expense
+          </h1>
+          <p className="text-muted-foreground">
+            Enter the details of your latest spending or use AI to scan.
+          </p>
+        </div>
 
-          {/* Category */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <label className="block text-sm font-medium mb-4">
-              <Tag className="inline w-4 h-4 mr-2" />
-              Category
-            </label>
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`p-4 rounded-xl border ${
-                    selectedCategory === cat.id
-                      ? "border-primary bg-primary/10"
-                      : "border-border"
-                  }`}
-                >
-                  <cat.icon className="w-5 h-5 mx-auto mb-1" />
-                  <span className="text-xs">{cat.label}</span>
-                </button>
-              ))}
+        {/* Smart Scan Banner */}
+        <div className="bg-card border border-border rounded-xl p-4 mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium text-foreground">Have a receipt?</p>
+              <p className="text-sm text-muted-foreground">
+                Let FinSense AI extract the details for you.
+              </p>
             </div>
           </div>
-
-          {/* Submit */}
-          <Button type="submit" size="lg" className="w-full">
-            <PlusCircle className="w-5 h-5 mr-2" />
-            Add Expense
+          <Button variant="outline" className="gap-2">
+            <ScanLine className="w-4 h-4" />
+            Smart Scan
           </Button>
         </div>
 
-        {/* Right (unchanged UI blocks) */}
-        <div className="space-y-6">
-          <div className="bg-gradient-to-br from-primary/20 to-card p-6 rounded-xl">
-            <Sparkles className="w-5 h-5 text-primary mb-2" />
-            <p className="text-sm">
-              You’ve spent <b>₹2,340</b> on food this week.
-            </p>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              Consider cooking at home
+        {/* Form Card */}
+        <div className="bg-card border border-border rounded-xl p-6">
+          {/* Amount */}
+          <div className="mb-6">
+            <label className="text-sm text-muted-foreground mb-2 block">
+              Total Amount
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="text-4xl font-light text-muted-foreground">₹</span>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="text-4xl font-light bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/50 w-full"
+              />
+            </div>
+            <div className="h-px bg-border mt-4" />
+          </div>
+
+          {/* Category & Date */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="text-sm text-muted-foreground mb-2 block">
+                Category
+              </label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm text-muted-foreground mb-2 block">
+                Date
+              </label>
+              <Input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="bg-secondary border-border"
+              />
             </div>
           </div>
+
+          {/* Description */}
+          <div className="mb-6">
+            <label className="text-sm text-muted-foreground mb-2 block">
+              Description (Optional)
+            </label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g. Dinner with team at Social"
+              className="bg-secondary border-border min-h-[100px] resize-none"
+            />
+          </div>
+
+          {/* Repeat Toggle */}
+          <div className="flex items-center justify-between py-4 border-t border-border">
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={repeatExpense}
+                onCheckedChange={setRepeatExpense}
+              />
+              <span className="text-sm text-foreground">
+                Repeat this expense?
+              </span>
+            </div>
+            <button className="flex items-center gap-1.5 text-primary text-sm hover:underline">
+              <Sparkle className="w-4 h-4" />
+              Often repeating on the 5th?
+            </button>
+          </div>
         </div>
-      </form>
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-4 mt-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="text-muted-foreground"
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleSave} className="gap-2" disabled={loading}>
+            <Check className="w-4 h-4" />
+            {loading ? "Saving..." : "Save Expense"}
+          </Button>
+        </div>
+      </div>
     </DashboardLayout>
   );
 }

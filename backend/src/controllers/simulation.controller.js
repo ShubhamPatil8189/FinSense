@@ -1,46 +1,71 @@
 const { runFinancialSimulation } = require('../services/simulation.service');
 const { genAI } = require('../config/gemini');
 
+
 exports.runSimulation = async (req, res) => {
   try {
     const { months, newExpense, newIncome, scenario } = req.body;
 
-    const simulation = await runFinancialSimulation(req.user._id, {
+    const simulationResult = await runFinancialSimulation(req.user._id, {
       months,
       newExpense,
-      newIncome
+      newIncome,
     });
 
-    let aiAdvice = '';
+    /* ---------------- RECOMMENDATION (RULE-BASED) ---------------- */
+    let recommendation = "✅ Your financial outlook looks stable.";
 
-    if (scenario) {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const finalBalance =
+      simulationResult.projections[
+        simulationResult.projections.length - 1
+      ].balance;
+
+    if (finalBalance < 0) {
+      recommendation = "⚠️ This scenario may strain your finances";
+    }
+
+    /* ---------------- AI ADVICE (OPTIONAL) ---------------- */
+    let aiAdvice = "";
+
+    if (scenario && scenario.trim().length > 5) {
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash",
+      });
 
       const prompt = `
 You are a smart financial advisor.
 Give short, clear, actionable advice.
 
-Scenario: ${scenario}
-Current Balance: ₹${simulation.currentBalance}
-Projected Balance after ${months} months: ₹${
-        simulation.projections[simulation.projections.length - 1].balance
-      }
+Scenario:
+${scenario}
 
-Respond in 4-5 simple lines.
+Current Balance: ₹${simulationResult.currentBalance}
+Projected Balance after ${months} months: ₹${finalBalance}
+
+Respond in 4–5 simple lines.
 `;
 
       const result = await model.generateContent(prompt);
       aiAdvice = result.response.text();
     }
 
+    /* ---------------- FINAL RESPONSE (MATCHES FRONTEND) ---------------- */
     res.json({
-      message: 'Financial simulation complete',
-      simulation,
-      aiAdvice
+      message: "Financial simulation complete",
+      simulation: {
+        currentBalance: simulationResult.currentBalance,
+        avgMonthlyIncome: simulationResult.avgMonthlyIncome,
+        avgMonthlyExpense: simulationResult.avgMonthlyExpense,
+        projections: simulationResult.projections,
+        recommendation, // ✅ REQUIRED BY FRONTEND
+      },
+      aiAdvice, // ✅ OPTIONAL BUT SUPPORTED
     });
-
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Simulation Error:", error);
+    res.status(500).json({
+      error: "Unable to run simulation. Please try again later.",
+    });
   }
 };
 
