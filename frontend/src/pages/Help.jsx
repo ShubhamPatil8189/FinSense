@@ -19,15 +19,28 @@ const helpSections = {
     items: [
       {
         question: "What is FinSense?",
-        answer:
-          "FinSense is an AI-powered personal finance assistant that helps you track spending, plan goals, and make smarter financial decisions.",
+        answer: "FinSense is an AI-powered personal finance assistant that helps you track spending, plan goals, and make smarter financial decisions.",
       },
       {
         question: "How do I create an account?",
-        answer:
-          "Click on Get Started, sign up using your email, and you’ll be redirected to your personal dashboard.",
+        answer: "Click on Get Started, sign up using your email, and you’ll be redirected to your personal dashboard.",
       },
     ],
+  },
+  premium_features: {
+    title: "Pro Features",
+    description: "Learn how to use your FinSense Pro benefits.",
+    icon: Sparkles,
+    items: [
+      {
+        question: "How does the AI Negotiation Assistant work?",
+        answer: "As a Pro member, you can use the Negotiation Assistant to generate professional, high-success-rate emails to banks. It automatically drafts waiver requests for Credit Card Fees, EMI Penalties, and Late Charges based on your specified tone."
+      },
+      {
+        question: "What are Smart Nudges?",
+        answer: "Smart Nudges evaluate your daily spending habits in real-time and provide actionable micro-decisions. Only Pro members have access to these hyper-personalized financial insights."
+      }
+    ]
   },
   account: {
     title: "Account & Profile",
@@ -36,30 +49,11 @@ const helpSections = {
     items: [
       {
         question: "Can I update my profile?",
-        answer:
-          "Yes. Go to Settings → Profile to update your name, email, and preferences.",
+        answer: "Yes. Go to Settings → Profile to update your name, email, and preferences.",
       },
       {
-        question: "How do I change my password?",
-        answer:
-          "Navigate to Settings → Security to update your password securely.",
-      },
-    ],
-  },
-  security: {
-    title: "Security & Privacy",
-    description: "Your data safety is our top priority.",
-    icon: Shield,
-    items: [
-      {
-        question: "Is my data safe?",
-        answer:
-          "Yes. FinSense uses 256-bit encryption and follows privacy-first principles.",
-      },
-      {
-        question: "Does FinSense sell my data?",
-        answer:
-          "No. Your data is never shared or sold to third parties.",
+        question: "How do I delete my account?",
+        answer: "Go to Settings → Danger Zone. Deleting your account requires OTP verification and permanently wipes all financial data, AI analysis, and configuration.",
       },
     ],
   },
@@ -70,13 +64,30 @@ const helpSections = {
     items: [
       {
         question: "Is FinSense free?",
-        answer:
-          "Yes, FinSense offers a free plan for students with optional premium upgrades.",
+        answer: "Yes, the core FinSense platform is completely free. We also offer 'FinSense Pro' for advanced capabilities.",
       },
       {
-        question: "How do I upgrade?",
-        answer:
-          "Go to Settings → Billing to explore premium plans.",
+        question: "What is FinSense Pro?",
+        answer: "FinSense Pro (₹299/yr) unlocks our exclusive AI Negotiation Assistant, Daily Smart Nudges, and advanced data filtering capabilities.",
+      },
+      {
+        question: "How do I upgrade to Pro with Card/UPI?",
+        answer: "Go to Settings → Subscription Plan. Our secure checkout allows payments via Credit/Debit Cards, UPI (Virtual Payment Address), and Netbanking.",
+      },
+    ],
+  },
+  security: {
+    title: "Security & Privacy",
+    description: "Your data safety is our top priority.",
+    icon: Shield,
+    items: [
+      {
+        question: "Is my data safe?",
+        answer: "Yes. FinSense uses 256-bit encryption and follows privacy-first principles.",
+      },
+      {
+        question: "Does FinSense sell my data?",
+        answer: "No. Your data is never shared or sold to third parties.",
       },
     ],
   },
@@ -87,8 +98,11 @@ const helpSections = {
     items: [
       {
         question: "Can I enable notifications?",
-        answer:
-          "Yes. You can manage alerts and reminders from the Settings page.",
+        answer: "Yes. You can manage alerts and reminders from the Settings page.",
+      },
+      {
+        question: "How do I export my data?",
+        answer: "Go to Settings → Export Data. You can instantly download a secure JSON file containing all your recorded income and expenses.",
       },
     ],
   },

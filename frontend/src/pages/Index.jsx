@@ -118,10 +118,6 @@ export default function Index() {
                   Get Started Free
                 </Button>
               </Link>
-              <Button variant="hero-outline" size="lg">
-                <Play className="w-4 h-4" />
-                View AI Demo
-              </Button>
             </div>
           </div>
         </div>

@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import api from "@/config/api";
 
 const mainNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -28,14 +30,31 @@ const mainNavItems = [
 ];
 
 const toolsNavItems = [
-  { icon: Lightbulb, label: "Nudges", href: "/nudges", badge: 4 },
+  { icon: Lightbulb, label: "Nudges", href: "/nudges" },
   { icon: Target, label: "Goals", href: "/goals" },
   { icon: DollarSign, label: "Wasted Money", href: "/optimization" },
   { icon: MessageSquare, label: "Negotiation Assistant", href: "/negotiation" },
 ];
 
-export function Sidebar({ userName = "Rahul Sharma", userPlan = "Pro Member" }) {
+export function Sidebar() {
   const location = useLocation();
+  const [userName, setUserName] = useState("");
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const res = await api.get('/auth/me');
+        if (res.data?.user) {
+          setUserName(res.data.user.name);
+          setIsPro(res.data.user.isPro);
+        }
+      } catch (error) {
+        // fail silently for sidebar
+      }
+    };
+    fetchUserName();
+  }, []);
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
@@ -138,7 +157,11 @@ export function Sidebar({ userName = "Rahul Sharma", userPlan = "Pro Member" }) 
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium truncate">{userName}</p>
-            <p className="text-xs text-muted-foreground">{userPlan}</p>
+            {isPro ? (
+              <span className="text-[10px] font-bold text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded uppercase tracking-widest mt-0.5 inline-block">Pro Member</span>
+            ) : (
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5 inline-block">Free Tier</span>
+            )}
           </div>
         </Link>
       </div>

@@ -73,12 +73,12 @@ const generateSmartNudges = async (userId) => {
     }
 
     /* ---------- GEMINI AI INSIGHT NUDGE ---------- */
-    if (todayExpenses.length > 0) {
+    try {
       const model = genAI.getGenerativeModel({
         model: "gemini-2.5-flash"
       });
 
-      const prompt = `
+      const prompt = todayExpenses.length > 0 ? `
 You are a financial assistant.
 Generate ONE short, actionable spending nudge.
 
@@ -93,15 +93,36 @@ Rules:
 - Max 2 lines
 - No emojis
 - Friendly and practical
+` : `
+You are a friendly financial assistant.
+The user has not logged any expenses today, which is great!
+Generate ONE short, actionable, and encouraging financial tip to help them stay on track with their savings goals or remind them to log their expenses.
+
+Rules:
+- Max 2 lines
+- No emojis
+- Friendly and practical
 `;
 
       const result = await model.generateContent(prompt);
 
       nudges.push({
-        type: 'ai',
+        type: 'insight',
         priority: 'medium',
-        message: result.response.text(),
-        action: 'Apply this suggestion today'
+        message: result.response.text().trim(),
+        action: todayExpenses.length > 0 ? 'Apply this suggestion today' : 'Keep up the good work!'
+      });
+    } catch (aiError) {
+      console.error('Gemini AI failed to generate nudge:', aiError);
+      // Fail silently for AI if it crashes, rule-based nudges might still exist
+    }
+
+    if (nudges.length === 0) {
+      nudges.push({
+        type: 'insight',
+        priority: 'medium',
+        message: "We're still analyzing your patterns. Stay tuned for AI-powered hints!",
+        action: "Keep tracking your expenses"
       });
     }
 

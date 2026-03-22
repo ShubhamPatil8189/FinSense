@@ -9,9 +9,10 @@ import {
   Info,
   TrendingUp,
   ChevronRight,
-  Lightbulb
+  Lightbulb,
+  Lock
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import api from "@/config/api";
 
@@ -51,15 +52,31 @@ export default function Negotiation() {
   const [selectedIssue, setSelectedIssue] = useState(issueTypes[0]);
   const [selectedTone, setSelectedTone] = useState("Firm");
   const [details, setDetails] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [generatedDraft, setGeneratedDraft] = useState("");
   const [generatedTips, setGeneratedTips] = useState([]);
+  
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get('/auth/me');
+        setIsPro(res.data.user.isPro);
+      } catch (err) {
+        // failed
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const generateDraft = async () => {
     setLoading(true);
     try {
       const response = await api.post("/negotiation/generate", {
-        type: "email", // email by default
+        type: "email",
         purpose: selectedIssue,
         tone: selectedTone.toLowerCase(),
         currentAmount: 2500,
@@ -77,8 +94,7 @@ export default function Negotiation() {
     } catch (error) {
       toast({
         title: "Generation Failed",
-        description:
-          error.response?.data?.error || "Unable to generate message",
+        description: error.response?.data?.error || "Unable to generate message",
         variant: "destructive"
       });
     } finally {
@@ -90,6 +106,36 @@ export default function Negotiation() {
     navigator.clipboard.writeText(generatedDraft);
     toast({ title: "Copied 📋", description: "Message copied to clipboard" });
   };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-64">
+          <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!isPro) {
+    return (
+      <DashboardLayout title="Negotiation Assistant">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 relative">
+              <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-yellow-500" />
+              <Lock className="w-10 h-10 text-primary" />
+            </div>
+            <h2 className="text-3xl font-bold mb-4">FinSense Pro Feature</h2>
+            <p className="text-muted-foreground max-w-md mx-auto mb-8 text-lg">
+              The AI Negotiation Assistant is a powerful Pro tool that helps you write perfect bank fee waiver emails. Upgrade to unlock this and more.
+            </p>
+            <Button size="lg" onClick={() => window.location.href = '/settings'} className="shadow-lg shadow-primary/20 text-lg h-12 w-48">
+              Upgrade Now
+            </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -105,13 +151,9 @@ export default function Negotiation() {
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-        {/* LEFT */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-card border rounded-xl p-6">
             <div className="grid md:grid-cols-2 gap-6 mb-6">
-
-              {/* Issue */}
               <div>
                 <label className="text-sm font-medium mb-2 flex items-center gap-2">
                   Select Issue <Info className="w-4 h-4 text-muted-foreground" />
@@ -127,7 +169,6 @@ export default function Negotiation() {
                 </select>
               </div>
 
-              {/* Tone */}
               <div>
                 <label className="text-sm font-medium mb-2 block">Tone</label>
                 <div className="flex gap-2">
@@ -148,7 +189,6 @@ export default function Negotiation() {
               </div>
             </div>
 
-            {/* Details */}
             <div className="mb-6">
               <label className="text-sm font-medium mb-2 block">Details</label>
               <input
@@ -174,7 +214,6 @@ export default function Negotiation() {
             </Button>
           </div>
 
-          {/* Draft */}
           {generatedDraft && (
             <div className="bg-card border rounded-xl p-6">
               <div className="flex justify-between mb-4">
@@ -198,7 +237,6 @@ export default function Negotiation() {
           )}
         </div>
 
-        {/* RIGHT */}
         <div className="space-y-6">
           <div className="bg-card border rounded-xl p-6">
             <h3 className="font-semibold mb-4">Success Probability</h3>

@@ -17,6 +17,7 @@ const spendDnaRoutes = require('./src/routes/spendDNA.route');
 const eventRoutes = require('./src/routes/event.route');
 const wasteRoutes = require('./src/routes/waste.route');
 const scoreRoutes = require('./src/routes/score.route');
+const subscriptionRoutes = require('./src/routes/subscription.route');
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/api/spend-dna', spendDnaRoutes);
 app.use('/api/event', eventRoutes);
 app.use('/api/waste', wasteRoutes);
 app.use('/api/score', scoreRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 
 /* ---------- Health Check ---------- */

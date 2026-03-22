@@ -6,13 +6,15 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   isVerified: { type: Boolean, default: false },
+  isPro: { type: Boolean, default: false },
+  proExpiryDate: { type: Date },
   otp: { type: String },
   otpExpiry: { type: Date },
   createdAt: { type: Date, default: Date.now },
 });
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password') && !this.isModified('otp')) return next();
+userSchema.pre('save', async function () {
+  if (!this.isModified('password') && !this.isModified('otp')) return;
   
   // Hash password if modified
   if (this.isModified('password')) {
@@ -23,7 +25,6 @@ userSchema.pre('save', async function (next) {
   if (this.isModified('otp') && this.otp) {
     this.otp = await bcrypt.hash(this.otp, 10);
   }
-  
 });
 
 userSchema.methods.comparePassword = async function (password) {
