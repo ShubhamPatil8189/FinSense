@@ -3,6 +3,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+import api from "@/config/api";
 
 export default function AddGoal() {
   const navigate = useNavigate();
@@ -22,40 +23,18 @@ export default function AddGoal() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      toast.error("Please login to add a goal");
-      navigate("/login");
-      return;
-    }
-
     try {
       setLoading(true);
-
-      const res = await fetch("http://localhost:4000/api/goals", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // ✅ REQUIRED
-        },
-        body: JSON.stringify({
-          title: form.title,
-          targetAmount: Number(form.targetAmount),
-          deadline: form.deadline,
-        }),
+      await api.post("/goals", {
+        title: form.title,
+        targetAmount: Number(form.targetAmount),
+        deadline: form.deadline,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to add goal");
-      }
 
       toast.success("Goal added successfully 🎯");
       navigate("/goals");
     } catch (err) {
-      toast.error(err.message || "Something went wrong");
+      toast.error(err.response?.data?.error || "Failed to add goal");
     } finally {
       setLoading(false);
     }

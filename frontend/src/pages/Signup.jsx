@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Sparkles, Shield } from "lucide-react";
 import { toast } from "sonner";
+import api from "@/config/api";
 import PublicNavbar from "../components/layout/PublicNavbar";
 
 export default function Signup() {
@@ -57,21 +58,12 @@ export default function Signup() {
 
     try {
       setLoading(true);
-
-      const res = await fetch("http://localhost:4000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message);
-
+      const res = await api.post("/auth/register", { name, email, password });
       toast.success("OTP sent to your email 📩");
       setOtpStep(true);
     } catch (err) {
       toast.error("Registration failed", {
-        description: err.message,
+        description: err.response?.data?.error || err.message,
       });
     } finally {
       setLoading(false);
@@ -89,26 +81,13 @@ export default function Signup() {
 
     try {
       setLoading(true);
-
-      const res = await fetch(
-        "http://localhost:4000/api/auth/verify-otp",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, otp }),
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message);
-
-      localStorage.setItem("token", data.token);
-
+      const res = await api.post("/auth/verify-otp", { email, otp });
+      localStorage.setItem("token", res.data.token);
       toast.success("Email verified successfully 🎉");
       navigate("/dashboard");
     } catch (err) {
       toast.error("OTP verification failed", {
-        description: err.message,
+        description: err.response?.data?.error || err.message,
       });
     } finally {
       setLoading(false);
@@ -119,19 +98,7 @@ export default function Signup() {
   const handleResendOtp = async () => {
     try {
       setLoading(true);
-
-      const res = await fetch(
-        "http://localhost:4000/api/auth/resend-otp",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message);
-
+      const res = await api.post("/auth/resend-otp", { email });
       toast.success("OTP resent successfully 📩");
 
       // Reset timer
@@ -139,7 +106,7 @@ export default function Signup() {
       setCanResend(false);
     } catch (err) {
       toast.error("Failed to resend OTP", {
-        description: err.message,
+        description: err.response?.data?.error || err.message,
       });
     } finally {
       setLoading(false);
@@ -216,7 +183,7 @@ export default function Signup() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
-                      {showPassword ? <EyeOff /> : <Eye />}
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
@@ -240,7 +207,7 @@ export default function Signup() {
                       }
                       className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
-                      {showConfirmPassword ? <EyeOff /> : <Eye />}
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
@@ -286,11 +253,10 @@ export default function Signup() {
                   type="button"
                   onClick={handleResendOtp}
                   disabled={!canResend || loading}
-                  className={`w-full text-sm font-medium ${
-                    canResend
+                  className={`w-full text-sm font-medium ${canResend
                       ? "text-primary hover:underline"
                       : "text-muted-foreground cursor-not-allowed"
-                  }`}
+                    }`}
                 >
                   Resend OTP
                 </button>

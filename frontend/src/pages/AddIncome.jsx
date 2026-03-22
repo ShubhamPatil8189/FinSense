@@ -4,7 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check } from "lucide-react";
-import { toast } from "sonner";
+import api from "@/config/api";
 
 export default function AddIncome() {
   const navigate = useNavigate();
@@ -20,40 +20,17 @@ export default function AddIncome() {
       return;
     }
 
-    const token = localStorage.getItem("token");
-
-    // ❌ No token → cannot add income
-    if (!token) {
-      toast.error("Please login first");
-      navigate("/login");
-      return;
-    }
-
     try {
       setLoading(true);
-
-      const res = await fetch("http://localhost:4000/api/income", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // ✅ REQUIRED
-        },
-        body: JSON.stringify({
-          amount: Number(amount),
-          source,
-        }),
+      await api.post("/income", {
+        amount: Number(amount),
+        source,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to add income");
-      }
 
       toast.success("Income added successfully 💰");
       navigate("/income");
     } catch (error) {
-      toast.error(error.message || "Something went wrong");
+      toast.error(error.response?.data?.error || "Failed to add income");
     } finally {
       setLoading(false);
     }

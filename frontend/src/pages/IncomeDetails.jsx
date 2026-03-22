@@ -9,7 +9,7 @@ import {
   IndianRupee,
   PlusCircle,
 } from "lucide-react";
-import { toast } from "sonner";
+import api from "@/config/api";
 
 export default function IncomeDetails() {
   const navigate = useNavigate();
@@ -21,34 +21,9 @@ export default function IncomeDetails() {
   /* ================= FETCH INCOME DETAILS ================= */
   useEffect(() => {
     const fetchIncome = async () => {
-      const token = localStorage.getItem("token");
-
-      // ❌ No token → cannot access
-      if (!token) {
-        toast.error("Please login to view income details");
-        navigate("/login");
-        return;
-      }
-
       try {
-        const res = await fetch(
-          "http://localhost:4000/api/income/details",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, // ✅ REQUIRED
-            },
-          }
-        );
-
-        if (res.status === 401) {
-          throw new Error("Session expired");
-        }
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.error || "Failed to fetch income");
-        }
+        const res = await api.get("/income/details");
+        const data = res.data;
 
         // ✅ Ensure sorted by date (newest first)
         const sortedIncomes = (data.incomes || []).sort(
@@ -60,9 +35,7 @@ export default function IncomeDetails() {
         // ✅ Prefer backend-calculated total
         setTotalIncome(data.totalIncome ?? 0);
       } catch (err) {
-        toast.error("Session expired. Please login again.");
-        localStorage.removeItem("token");
-        navigate("/login");
+        toast.error(err.response?.data?.error || "Failed to fetch income");
       } finally {
         setLoading(false);
       }

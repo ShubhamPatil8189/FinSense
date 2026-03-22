@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Check } from "lucide-react";
-import { toast } from "sonner";
+import api from "@/config/api";
 
 const categories = [
   "Food",
@@ -43,55 +43,20 @@ export default function AddExpense() {
       return;
     }
 
-    const token = localStorage.getItem("token");
-
-    // ❌ No token → fail Test Case 12
-    if (!token) {
-      toast.error("Please login to continue");
-      navigate("/login");
-      return;
-    }
-
     try {
       setLoading(true);
-
-      const res = await fetch("http://localhost:4000/api/expenses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // ✅ REQUIRED
-        },
-        body: JSON.stringify({
-          amount: Number(amount),
-          category,
-          mood,
-          description,
-        }),
+      await api.post("/expenses", {
+        amount: Number(amount),
+        category,
+        mood,
+        description,
       });
-
-      const data = await res.json();
-
-      // ❌ Token invalid / expired
-      if (res.status === 401) {
-        throw new Error("Session expired. Please login again.");
-      }
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to add expense");
-      }
 
       toast.success("Expense added successfully 💸");
       navigate("/dashboard");
 
     } catch (error) {
-      toast.error("Error adding expense", {
-        description: error.message,
-      });
-
-      if (error.message.includes("login")) {
-        localStorage.removeItem("token");
-        navigate("/login");
-      }
+      toast.error(error.response?.data?.error || "Error adding expense");
     } finally {
       setLoading(false);
     }

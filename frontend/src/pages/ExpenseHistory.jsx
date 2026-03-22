@@ -10,7 +10,7 @@ import {
   Smile,
   Receipt,
 } from "lucide-react";
-import { toast } from "sonner";
+import api from "@/config/api";
 
 export default function ExpenseHistory() {
   const navigate = useNavigate();
@@ -20,34 +20,9 @@ export default function ExpenseHistory() {
   /* ================= FETCH EXPENSE HISTORY ================= */
   useEffect(() => {
     const fetchExpenses = async () => {
-      const token = localStorage.getItem("token");
-
-      // ❌ No token → Test Case 15 requires auth
-      if (!token) {
-        toast.error("Please login to view expenses");
-        navigate("/login");
-        return;
-      }
-
       try {
-        const res = await fetch(
-          "http://localhost:4000/api/expenses/history",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        // ❌ Token invalid / expired
-        if (res.status === 401) {
-          throw new Error("Session expired");
-        }
-
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || "Failed to fetch expenses");
-        }
+        const res = await api.get("/expenses/history");
+        const data = res.data;
 
         // ✅ Ensure newest first (safety)
         const sortedExpenses = (data.expenses || []).sort(
@@ -56,9 +31,7 @@ export default function ExpenseHistory() {
 
         setExpenses(sortedExpenses);
       } catch (err) {
-        toast.error("Session expired. Please login again.");
-        localStorage.removeItem("token");
-        navigate("/login");
+        toast.error(err.response?.data?.error || "Failed to fetch expenses");
       } finally {
         setLoading(false);
       }

@@ -4,12 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PlusCircle, Calendar, PiggyBank,Target } from "lucide-react";
-import axios from "axios";
-
-const API = axios.create({
-  baseURL: "http://localhost:4000/api",
-  withCredentials: true,
-});
+import api from "@/config/api";
 
 export default function Goals() {
   const [goals, setGoals] = useState([]);
@@ -19,7 +14,7 @@ export default function Goals() {
   useEffect(() => {
     const fetchGoals = async () => {
       try {
-        const res = await API.get("/goals/prioritize");
+        const res = await api.get("/goals/prioritize");
         setGoals(res.data.goals || []);
       } catch (err) {
         console.error(err);

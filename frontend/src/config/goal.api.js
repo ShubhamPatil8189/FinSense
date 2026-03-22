@@ -1,9 +1,4 @@
-import axios from "axios";
+import api from "./api";
 
-const API = axios.create({
-  baseURL: "http://localhost:4000/api",
-  withCredentials: true, // 👈 IMPORTANT (cookies)
-});
-
-export const addGoalApi = (data) => API.post("/goals", data);
-export const getPrioritizedGoalsApi = () => API.get("/goals/prioritize");
+export const addGoalApi = (data) => api.post("/goals", data);
+export const getPrioritizedGoalsApi = () => api.get("/goals/prioritize");
