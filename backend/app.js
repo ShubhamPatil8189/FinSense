@@ -21,30 +21,38 @@ const subscriptionRoutes = require('./src/routes/subscription.route');
 
 const app = express();
 
-/* ---------- Middleware ---------- */
-app.use(cookieParser());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-
 /* ---------- CORS ---------- */
 const allowedOrigins = [
   'http://localhost:5000',
   'http://localhost:5173',
   'http://localhost:8080',
-  'http://localhost:4000'
+  'http://localhost:4000',
+  'https://fin-sense-blxwmn4qa-shubham-patils-projects-0c5937dd.vercel.app'
 ];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
+  origin: function (origin, callback) {
+    // allow requests with no origin (like Postman, mobile apps)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      return callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
 }));
+
+// ✅ VERY IMPORTANT: handle preflight requests
+app.options("*", cors());
+
+/* ---------- Middleware ---------- */
+app.use(cookieParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
 
 /* ---------- Routes ---------- */
 app.use('/api/auth', authRoutes);
