@@ -32,7 +32,7 @@ app.use(cors({
       'http://localhost:5173',
       'http://localhost:8080',
       'http://localhost:4000',
-      'https://fin-sense-blxwmn4qa-shubham-patils-projects-0c5937dd.vercel.app'
+      'https://fin-sense-tau.vercel.app'
     ];
 
     if (allowedOrigins.includes(origin)) {
