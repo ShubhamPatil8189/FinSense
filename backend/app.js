@@ -22,37 +22,34 @@ const subscriptionRoutes = require('./src/routes/subscription.route');
 const app = express();
 
 /* ---------- CORS ---------- */
-const allowedOrigins = [
-  'http://localhost:5000',
-  'http://localhost:5173',
-  'http://localhost:8080',
-  'http://localhost:4000',
-  'https://fin-sense-blxwmn4qa-shubham-patils-projects-0c5937dd.vercel.app'
-];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like Postman, mobile apps)
     if (!origin) return callback(null, true);
 
+    const allowedOrigins = [
+      'http://localhost:5000',
+      'http://localhost:5173',
+      'http://localhost:8080',
+      'http://localhost:4000',
+      'https://fin-sense-blxwmn4qa-shubham-patils-projects-0c5937dd.vercel.app'
+    ];
+
     if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+      callback(null, true);
     } else {
-      return callback(new Error("Not allowed by CORS"));
+      callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
 
-// ✅ VERY IMPORTANT: handle preflight requests
-app.options("*", cors());
 
 /* ---------- Middleware ---------- */
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
 
 /* ---------- Routes ---------- */
 app.use('/api/auth', authRoutes);
@@ -70,10 +67,9 @@ app.use('/api/waste', wasteRoutes);
 app.use('/api/score', scoreRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 
-
 /* ---------- Health Check ---------- */
 app.get('/', (req, res) => {
-  res.json({ message: '✅ FinSense Backend Running' });
+  res.json({ message: ' FinSense Backend Running' });
 });
 
 module.exports = app;
