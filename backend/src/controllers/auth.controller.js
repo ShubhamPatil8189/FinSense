@@ -182,7 +182,8 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     // Send plain OTP via email (before hashing in save hook)
-    await sendOTPEmail(email, otp, user.name, 'Password Reset OTP');
+    const emailres = await sendOTPEmail(email, otp, user.name, 'Password Reset OTP');
+    console.log("BAv");
 
     res.json({ message: 'OTP sent successfully to email' });
   } catch (error) {
